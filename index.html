@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Generador de Reportes ITS</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --bg: #0d0f14;
+    --bg2: #13161d;
+    --bg3: #1a1e28;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --accent: #00e5a0;
+    --accent2: #00b87a;
+    --text: #e8eaf0;
+    --text2: #8b909e;
+    --text3: #555b6b;
+    --danger: #ff5e5e;
+    --warn: #ffb547;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* SIDEBAR */
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 220px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+  }
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: #0d0f14;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: .08em;
+    margin-bottom: 8px;
+  }
+  .sidebar-logo h1 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+  .sidebar-logo p {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 3px;
+    font-family: var(--mono);
+  }
+  .nav { padding: 16px 12px; flex: 1; }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 13px;
+    font-weight: 400;
+    transition: all .15s;
+    margin-bottom: 2px;
+    border: 1px solid transparent;
+    user-select: none;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active {
+    background: rgba(0,229,160,0.08);
+    color: var(--accent);
+    border-color: rgba(0,229,160,0.15);
+    font-weight: 500;
+  }
+  .nav-icon {
+    width: 18px; height: 18px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .nav-icon svg { width: 16px; height: 16px; }
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  /* MAIN */
+  .main {
+    margin-left: 220px;
+    flex: 1;
+    padding: 32px 40px;
+    max-width: calc(100vw - 220px);
+  }
+  .panel { display: none; animation: fadeIn .2s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .page-header {
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-header h2 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .page-header p { color: var(--text2); font-size: 13px; }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* CARD */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 22px;
+    margin-bottom: 20px;
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 14px;
+    font-family: var(--mono);
+  }
+
+  /* FORM */
+  label {
+    display: block;
+    font-size: 12px;
+    color: var(--text2);
+    margin-bottom: 5px;
+    font-weight: 500;
+  }
+  input[type="text"], input[type="date"], input[type="time"], input[type="file"], select, textarea {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+  textarea { resize: vertical; line-height: 1.6; }
+  input[type="file"] { padding: 8px 12px; cursor: pointer; }
+  .field { margin-bottom: 14px; }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text2);
+  }
+  .btn:hover { background: var(--bg3); color: var(--text); border-color: var(--border2); }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary {
+    background: var(--accent);
+    color: #0d0f14;
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  .btn-primary:hover { background: #00cc8e; border-color: #00cc8e; color: #0d0f14; }
+  .btn-ghost { border-color: transparent; }
+  .btn-ghost:hover { border-color: var(--border2); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-danger { color: var(--danger); border-color: rgba(255,94,94,0.2); background: transparent; }
+  .btn-danger:hover { background: rgba(255,94,94,0.08); }
+  .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  /* OUTPUT */
+  .output-area {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    color: #a8d8b8;
+    max-height: 480px;
+    overflow-y: auto;
+    min-height: 80px;
+  }
+  .output-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .output-label {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+  .badge {
+    font-size: 11px;
+    font-family: var(--mono);
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: rgba(0,229,160,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(0,229,160,0.2);
+  }
+  .badge-warn {
+    background: rgba(255,181,71,0.1);
+    color: var(--warn);
+    border-color: rgba(255,181,71,0.2);
+  }
+
+  /* MOVIL ROWS */
+  .movil-row {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr 1fr 36px;
+    gap: 8px;
+    align-items: end;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .movil-row:last-child { border-bottom: none; margin-bottom: 0; }
+  .del-btn {
+    background: none;
+    border: 1px solid rgba(255,94,94,0.2);
+    color: var(--danger);
+    border-radius: 8px;
+    width: 34px; height: 34px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+    flex-shrink: 0;
+  }
+  .del-btn:hover { background: rgba(255,94,94,0.08); }
+  .add-btn {
+    background: none;
+    border: 1px dashed var(--border2);
+    border-radius: 8px;
+    color: var(--accent);
+    font-size: 12px;
+    font-family: var(--sans);
+    font-weight: 500;
+    padding: 8px 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    transition: all .15s;
+  }
+  .add-btn:hover { background: rgba(0,229,160,0.05); border-color: var(--accent); }
+
+  /* EXCEL CARDS */
+  .xl-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color .15s;
+  }
+  .xl-card:hover { border-color: var(--border2); }
+  .xl-icon {
+    width: 44px; height: 44px;
+    background: rgba(0,229,160,0.1);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+  }
+  .xl-icon svg { width: 22px; height: 22px; color: var(--accent); }
+  .xl-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .xl-card p { font-size: 12px; color: var(--text2); margin-bottom: 14px; line-height: 1.5; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 28px; right: 28px;
+    background: var(--bg2);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-size: 12px;
+    font-family: var(--mono);
+    padding: 10px 16px;
+    border-radius: 8px;
+    z-index: 9999;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all .25s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: none; }
+
+  /* DIVIDER */
+  .sep { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  /* TEMPLATE EDITOR */
+  .tpl-editor {
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.75;
+    color: #a8c5d4;
+    background: var(--bg);
+    border-color: rgba(0,229,160,0.15);
+  }
+
+  /* IMPORT RESULT */
+  .import-result {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 12.5px;
+    font-family: var(--mono);
+    color: var(--accent);
+    margin-top: 12px;
+    display: none;
+    white-space: pre-wrap;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { width: 200px; }
+    .main { margin-left: 200px; padding: 20px; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .movil-row { grid-template-columns: 1fr 1fr; }
+    .movil-row > div:nth-child(3), .movil-row > div:nth-child(4) { grid-column: span 1; }
+    .del-btn { grid-column: 2; justify-self: end; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-badge">ITS v2.0</div>
+      <h1>Generador de Reportes</h1>
+      <p>Sistema de Mantenimiento</p>
+    </div>
+    <nav class="nav">
+      <div class="nav-item active" onclick="showPanel('prev')">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+        </span>
+        Preventivos
+      </div>
+      <div class="nav-item" onclick="showPanel('turno')">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        </span>
+        Entrega de turno
+      </div>
+      <div class="nav-item" onclick="showPanel('excel')">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M10 13l-2 4h6l-2-4"/></svg>
+        </span>
+        Plantilla Excel
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      Nicolas Cancimance<br>
+      Técnico ITS
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ===== PREVENTIVOS ===== -->
+    <div id="panel-prev" class="panel active">
+      <div class="page-header">
+        <h2>Reportes Preventivos</h2>
+        <p>Genera los comentarios de mantenimiento preventivo desde datos tabulados</p>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="card">
+            <div class="card-title">Datos de entrada</div>
+            <div class="field">
+              <label>Datos (Código ⇥ KM ⇥ Corrección) — una línea por móvil</label>
+              <textarea id="input-data" rows="8" placeholder="Z34-4002&#9;241790&#10;Z34-4009&#9;232205&#10;Z34-4016&#9;230798&#9;Ajuste de puente bornera&#10;Z34-4018&#9;236.726"></textarea>
+              <p style="font-size:11px;color:var(--text3);margin-top:4px;font-family:var(--mono);">Tab separa columnas · 3ª col. opcional</p>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">Plantilla de texto</div>
+            <div class="field">
+              <textarea id="template-text" class="tpl-editor" rows="9">**{codigo} – {km} km**  
+Mantenimiento preventivo al sistema ITS:  
+Se realiza limpieza de los equipos, incluyendo dispositivos en el habitáculo, cámaras IP, baterías, consola y puertos USB. Se revisa y valida la configuración del NVR y el router de red, asegurando correcta transmisión con el CDEG.  
+Corrección: {correccion}  
+Estado: Móvil operativo por ITS.</textarea>
+              <p style="font-size:11px;color:var(--text3);margin-top:4px;font-family:var(--mono);">Variables: {codigo} · {km} · {correccion}</p>
+            </div>
+            <button class="btn btn-primary" onclick="genPreventivos()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Generar reportes
+            </button>
+          </div>
+        </div>
+
+        <div id="output-prev-wrapper" style="display:none;">
+          <div class="card" style="height:100%;">
+            <div class="output-header">
+              <span class="output-label">Resultado</span>
+              <span class="badge" id="count-badge">0 reportes</span>
+              <div style="margin-left:auto;display:flex;gap:8px;">
+                <button class="btn btn-sm" onclick="copyPrev()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                  Copiar
+                </button>
+                <button class="btn btn-sm" onclick="downloadPrev()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  .txt
+                </button>
+              </div>
+            </div>
+            <div class="output-area" id="output-prev"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TURNO ===== -->
+    <div id="panel-turno" class="panel">
+      <div class="page-header">
+        <h2>Entrega de Turno</h2>
+        <p>Genera el resumen de actividades del día para entrega de turno</p>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <div class="card">
+            <div class="card-title">Información general</div>
+            <div class="grid-2">
+              <div class="field">
+                <label>Fecha</label>
+                <input type="date" id="t-fecha" />
+              </div>
+              <div class="field">
+                <label>Técnico</label>
+                <input type="text" id="t-tecnico" value="Nicolas Cancimance" />
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Preventivos realizados</div>
+            <div id="moviles-list"></div>
+            <button class="add-btn" onclick="addMovil()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Agregar móvil
+            </button>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Correctivos <span style="font-size:10px;font-weight:400;color:var(--text3);">(opcional)</span></div>
+            <div class="field">
+              <label>Un correctivo por línea</label>
+              <textarea id="t-correctivos" rows="3" placeholder="Z34-4016 – Ajuste de puente bornera en habitaculo&#10;Z34-4020 – Cambio de batería NVR"></textarea>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Repuestos utilizados <span style="font-size:10px;font-weight:400;color:var(--text3);">(opcional)</span></div>
+            <textarea id="t-repuestos" rows="2" placeholder="Batería 12V 7Ah (x2), fusible 5A (x3)"></textarea>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Observaciones <span style="font-size:10px;font-weight:400;color:var(--text3);">(opcional)</span></div>
+            <textarea id="t-obs" rows="2" placeholder="Sin novedades adicionales."></textarea>
+          </div>
+
+          <button class="btn btn-primary" onclick="genTurno()" style="margin-bottom:20px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Generar entrega de turno
+          </button>
+        </div>
+
+        <div id="output-turno-wrapper" style="display:none;">
+          <div class="card" style="position:sticky;top:20px;">
+            <div class="output-header">
+              <span class="output-label">Vista previa</span>
+              <div style="margin-left:auto;display:flex;gap:8px;">
+                <button class="btn btn-sm" onclick="copyTurno()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                  Copiar
+                </button>
+                <button class="btn btn-sm" onclick="downloadTurno()">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  .txt
+                </button>
+              </div>
+            </div>
+            <div class="output-area" id="output-turno"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== EXCEL ===== -->
+    <div id="panel-excel" class="panel">
+      <div class="page-header">
+        <h2>Plantillas Excel</h2>
+        <p>Descarga, completa y vuelve a importar para generar reportes automáticamente</p>
+      </div>
+
+      <div class="grid-2" style="margin-bottom:24px;">
+        <div class="xl-card">
+          <div class="xl-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+          </div>
+          <h3>Plantilla de Preventivos</h3>
+          <p>Columnas: Código · KM · Corrección (opcional)<br>Genera todos los reportes al importar.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="downloadXlsPrev()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Descargar .xlsx
+            </button>
+            <button class="btn btn-sm" onclick="downloadCsvPrev()">CSV ejemplo</button>
+          </div>
+        </div>
+        <div class="xl-card">
+          <div class="xl-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+          </div>
+          <h3>Plantilla Entrega de Turno</h3>
+          <p>4 hojas: General · Preventivos · Correctivos · Repuestos<br>Auto-rellena el formulario al importar.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="downloadXlsTurno()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Descargar .xlsx
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Importar archivo Excel</div>
+        <div class="field">
+          <label>Selecciona el archivo completado (.xlsx, .xls o .csv)</label>
+          <input type="file" id="file-input" accept=".xlsx,.xls,.csv" onchange="handleImport(this)" />
+        </div>
+        <div id="import-msg" class="import-result"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Flujo de trabajo recomendado</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:8px;overflow:hidden;">
+          <div style="background:var(--bg3);padding:14px 16px;">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--accent);margin-bottom:6px;">01</div>
+            <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Descargar plantilla</div>
+            <div style="font-size:12px;color:var(--text2);">Elige preventivos o entrega de turno</div>
+          </div>
+          <div style="background:var(--bg3);padding:14px 16px;">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--accent);margin-bottom:6px;">02</div>
+            <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Completar Excel</div>
+            <div style="font-size:12px;color:var(--text2);">Rellena los datos del día en Excel</div>
+          </div>
+          <div style="background:var(--bg3);padding:14px 16px;">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--accent);margin-bottom:6px;">03</div>
+            <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Importar aquí</div>
+            <div style="font-size:12px;color:var(--text2);">Sube el archivo y se procesa automáticamente</div>
+          </div>
+          <div style="background:var(--bg3);padding:14px 16px;">
+            <div style="font-family:var(--mono);font-size:10px;color:var(--accent);margin-bottom:6px;">04</div>
+            <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Copiar o descargar</div>
+            <div style="font-size:12px;color:var(--text2);">Resultado listo para pegar o guardar</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── NAV ──────────────────────────────────────────────
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  const idx = {prev:0, turno:1, excel:2}[id];
+  document.querySelectorAll('.nav-item')[idx].classList.add('active');
+}
+
+// ── TOAST ─────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── PREVENTIVOS ──────────────────────────────────────
+function genPreventivos() {
+  const raw = document.getElementById('input-data').value.trim();
+  const tpl = document.getElementById('template-text').value;
+  if (!raw) { toast('⚠ Pega los datos primero'); return; }
+  const lines = raw.split('\n').filter(l => l.trim());
+  let out = ''; let count = 0;
+  for (const line of lines) {
+    const p = line.split('\t');
+    const codigo = (p[0] || '').trim();
+    const km = (p[1] || '').replace(/\./g, '').trim();
+    const correccion = (p[2] || '').trim() || 'Sin novedades.';
+    if (!codigo) continue;
+    out += tpl
+      .replace(/\{codigo\}/g, codigo)
+      .replace(/\{km\}/g, km)
+      .replace(/\{correccion\}/g, correccion) + '\n';
+    count++;
+  }
+  document.getElementById('output-prev').textContent = out.trim();
+  document.getElementById('count-badge').textContent = count + (count === 1 ? ' reporte' : ' reportes');
+  document.getElementById('output-prev-wrapper').style.display = 'block';
+  toast('✓ ' + count + ' reportes generados');
+}
+
+function copyPrev() {
+  navigator.clipboard.writeText(document.getElementById('output-prev').textContent);
+  toast('✓ Copiado al portapapeles');
+}
+
+function downloadPrev() {
+  dlText(document.getElementById('output-prev').textContent, 'reporte_preventivos.txt');
+}
+
+// ── TURNO ─────────────────────────────────────────────
+let movilCount = 0;
+function addMovil(m, ot, hi, hf) {
+  movilCount++;
+  const id = 'mv' + movilCount;
+  const div = document.createElement('div');
+  div.className = 'movil-row'; div.id = id;
+  div.innerHTML = `
+    <div>
+      <label style="font-size:11px;font-family:var(--mono)">Móvil</label>
+      <input type="text" placeholder="Z34-4002" value="${m||''}" />
+    </div>
+    <div>
+      <label style="font-size:11px;font-family:var(--mono)">OT</label>
+      <input type="text" placeholder="123456" value="${ot||''}" />
+    </div>
+    <div>
+      <label style="font-size:11px;font-family:var(--mono)">Inicio</label>
+      <input type="time" value="${hi||''}" />
+    </div>
+    <div>
+      <label style="font-size:11px;font-family:var(--mono)">Fin</label>
+      <input type="time" value="${hf||''}" />
+    </div>
+    <button class="del-btn" onclick="document.getElementById('${id}').remove()">×</button>`;
+  document.getElementById('moviles-list').appendChild(div);
+}
+addMovil();
+
+function formatFecha(d) {
+  if (!d) return '___';
+  const [y, m, day] = d.split('-');
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  return `${parseInt(day)} de ${meses[parseInt(m)-1]} de ${y}`;
+}
+
+function genTurno() {
+  const fecha = formatFecha(document.getElementById('t-fecha').value);
+  const tec = document.getElementById('t-tecnico').value || 'Nicolas Cancimance';
+  const correctivos = document.getElementById('t-correctivos').value.trim();
+  const repuestos = document.getElementById('t-repuestos').value.trim();
+  const obs = document.getElementById('t-obs').value.trim();
+
+  const rows = document.querySelectorAll('#moviles-list .movil-row');
+  let prevBlock = '';
+  rows.forEach(row => {
+    const ins = row.querySelectorAll('input');
+    const movil = ins[0].value.trim();
+    const ot = ins[1].value.trim();
+    const hi = ins[2].value;
+    const hf = ins[3].value;
+    if (!movil) return;
+    prevBlock += `Movil: ${movil}\nOT: ${ot || '______'}\nHora Inicio: ${hi || '__:__'}\nHora Fin: ${hf || '__:__'}\n\n`;
+  });
+
+  let out = `*Entrega de turno*\n*FECHA:* ${fecha}\n*TECNICO:* ${tec}\n\n*PREVENTIVOS*\n${prevBlock.trim()}`;
+  if (correctivos) out += `\n\n*CORRECTIVOS*\n${correctivos}`;
+  if (repuestos) out += `\n\n*REPUESTO UTILIZADO*\n${repuestos}`;
+  out += `\n\n*OBSERVACIONES*\n${obs || 'Sin novedades.'}`;
+
+  document.getElementById('output-turno').textContent = out;
+  document.getElementById('output-turno-wrapper').style.display = 'block';
+  toast('✓ Entrega generada');
+}
+
+function copyTurno() {
+  navigator.clipboard.writeText(document.getElementById('output-turno').textContent);
+  toast('✓ Copiado al portapapeles');
+}
+
+function downloadTurno() {
+  dlText(document.getElementById('output-turno').textContent, 'entrega_turno.txt');
+}
+
+// ── EXCEL DOWNLOAD ─────────────────────────────────────
+function downloadXlsPrev() {
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet([
+    ['Codigo', 'KM', 'Correccion (vacío = Sin novedades)'],
+    ['Z34-4002', '241790', ''],
+    ['Z34-4009', '232205', ''],
+    ['Z34-4016', '230798', 'Ajuste de puente bornera en habitaculo'],
+    ['Z34-4018', '236726', ''],
+  ]);
+  ws['!cols'] = [{wch:14},{wch:12},{wch:48}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Preventivos');
+  XLSX.writeFile(wb, 'plantilla_preventivos.xlsx');
+  toast('✓ Descargando plantilla');
+}
+
+function downloadCsvPrev() {
+  const txt = `Codigo\tKM\tCorreccion\nZ34-4002\t241790\t\nZ34-4009\t232205\t\nZ34-4016\t230798\tAjuste de puente bornera\n`;
+  dlText(txt, 'datos_preventivos.csv');
+}
+
+function downloadXlsTurno() {
+  const wb = XLSX.utils.book_new();
+  const ws1 = XLSX.utils.aoa_to_sheet([
+    ['Campo','Valor'],
+    ['Fecha (AAAA-MM-DD)', new Date().toISOString().split('T')[0]],
+    ['Tecnico','Nicolas Cancimance'],
+    ['Observaciones','Sin novedades.'],
+  ]);
+  ws1['!cols'] = [{wch:26},{wch:40}];
+  XLSX.utils.book_append_sheet(wb, ws1, 'General');
+  const ws2 = XLSX.utils.aoa_to_sheet([
+    ['Movil','OT','Hora_Inicio','Hora_Fin'],
+    ['Z34-4002','123456','08:00','10:30'],
+    ['Z34-4009','123457','10:45','12:30'],
+  ]);
+  ws2['!cols'] = [{wch:13},{wch:10},{wch:12},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, ws2, 'Preventivos');
+  const ws3 = XLSX.utils.aoa_to_sheet([
+    ['Movil','Descripcion'],
+    ['Z34-4016','Ajuste de puente bornera en habitaculo'],
+  ]);
+  ws3['!cols'] = [{wch:13},{wch:50}];
+  XLSX.utils.book_append_sheet(wb, ws3, 'Correctivos');
+  const ws4 = XLSX.utils.aoa_to_sheet([
+    ['Repuesto'],
+    ['Bateria 12V 7Ah'],
+    ['Fusible 5A'],
+  ]);
+  ws4['!cols'] = [{wch:40}];
+  XLSX.utils.book_append_sheet(wb, ws4, 'Repuestos');
+  XLSX.writeFile(wb, 'plantilla_turno.xlsx');
+  toast('✓ Descargando plantilla');
+}
+
+// ── EXCEL IMPORT ──────────────────────────────────────
+function handleImport(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const data = new Uint8Array(e.target.result);
+    const wb = XLSX.read(data, {type:'array'});
+    const sheets = wb.SheetNames;
+    const msg = document.getElementById('import-msg');
+    msg.style.display = 'block';
+
+    if (sheets.includes('General')) {
+      // Turno
+      const gen = XLSX.utils.sheet_to_json(wb.Sheets['General'],{header:1}).slice(1);
+      const getV = k => { const r = gen.find(r => r[0] && r[0].toString().toLowerCase().includes(k.toLowerCase())); return r ? (r[1]||'').toString() : ''; };
+      document.getElementById('t-fecha').value = getV('fecha');
+      document.getElementById('t-tecnico').value = getV('tecnico') || 'Nicolas Cancimance';
+      document.getElementById('t-obs').value = getV('observ');
+
+      document.getElementById('moviles-list').innerHTML = ''; movilCount = 0;
+      if (sheets.includes('Preventivos')) {
+        const prevR = XLSX.utils.sheet_to_json(wb.Sheets['Preventivos'],{header:1}).slice(1);
+        prevR.forEach(r => addMovil(r[0], r[1], r[2], r[3]));
+      }
+      if (movilCount === 0) addMovil();
+
+      if (sheets.includes('Correctivos')) {
+        const corR = XLSX.utils.sheet_to_json(wb.Sheets['Correctivos'],{header:1}).slice(1);
+        document.getElementById('t-correctivos').value = corR.map(r => r[0] + (r[1] ? ' – '+r[1] : '')).filter(Boolean).join('\n');
+      }
+      if (sheets.includes('Repuestos')) {
+        const repR = XLSX.utils.sheet_to_json(wb.Sheets['Repuestos'],{header:1}).slice(1);
+        document.getElementById('t-repuestos').value = repR.map(r => r[0]).filter(Boolean).join(', ');
+      }
+      msg.textContent = '✓ Datos importados. Ve a Entrega de turno para revisar y generar.';
+      showPanel('turno');
+      toast('✓ Excel importado correctamente');
+
+    } else {
+      // Preventivos
+      const ws = wb.Sheets[sheets[0]];
+      const rows = XLSX.utils.sheet_to_json(ws,{header:1}).slice(1);
+      const tpl = document.getElementById('template-text').value;
+      let out = ''; let count = 0;
+      rows.forEach(r => {
+        const codigo = (r[0]||'').toString().trim();
+        const km = (r[1]||'').toString().replace(/\./g,'').trim();
+        const correccion = (r[2]||'').toString().trim() || 'Sin novedades.';
+        if (!codigo) return;
+        out += tpl.replace(/\{codigo\}/g,codigo).replace(/\{km\}/g,km).replace(/\{correccion\}/g,correccion)+'\n';
+        count++;
+      });
+      document.getElementById('output-prev').textContent = out.trim();
+      document.getElementById('count-badge').textContent = count + ' reportes';
+      document.getElementById('output-prev-wrapper').style.display = 'block';
+      msg.textContent = '✓ ' + count + ' reportes generados. Ve a Preventivos para ver el resultado.';
+      showPanel('prev');
+      toast('✓ ' + count + ' reportes desde Excel');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── UTILS ─────────────────────────────────────────────
+function dlText(text, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type:'text/plain;charset=utf-8'}));
+  a.download = name; a.click();
+}
+
+// Init
+document.getElementById('t-fecha').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
