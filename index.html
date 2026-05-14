@@ -7,437 +7,665 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  :root {
-    --bg: #0d0f14;
-    --bg2: #13161d;
-    --bg3: #1a1e28;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.13);
-    --accent: #00e5a0;
-    --accent2: #00b87a;
-    --text: #e8eaf0;
-    --text2: #8b909e;
-    --text3: #555b6b;
-    --danger: #ff5e5e;
-    --warn: #ffb547;
-    --mono: 'IBM Plex Mono', monospace;
-    --sans: 'IBM Plex Sans', sans-serif;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  html { scroll-behavior: smooth; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 14px;
-    min-height: 100vh;
-    line-height: 1.6;
-  }
+/*
+  ╔══════════════════════════════════════╗
+  ║   REGLA 60 - 30 - 10                 ║
+  ║   60% → --bg  (#10131a) — fondo base ║
+  ║   30% → --bg2 (#181c27) — superficie ║
+  ║   10% → --accent (#00e5a0) — acento  ║
+  ╚══════════════════════════════════════╝
+*/
+:root {
+  /* 60% — color base / fondo */
+  --bg:       #10131a;
+  --bg-alt:   #0c0f15;
 
-  /* SIDEBAR */
-  .layout { display: flex; min-height: 100vh; }
-  .sidebar {
-    width: 220px;
-    background: var(--bg2);
-    border-right: 1px solid var(--border);
-    position: fixed;
-    top: 0; left: 0; bottom: 0;
-    display: flex;
-    flex-direction: column;
-    z-index: 100;
-  }
-  .sidebar-logo {
-    padding: 24px 20px 20px;
-    border-bottom: 1px solid var(--border);
-  }
-  .logo-badge {
-    display: inline-block;
-    background: var(--accent);
-    color: #0d0f14;
-    font-family: var(--mono);
-    font-size: 10px;
-    font-weight: 500;
-    padding: 3px 8px;
-    border-radius: 4px;
-    letter-spacing: .08em;
-    margin-bottom: 8px;
-  }
-  .sidebar-logo h1 {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--text);
-    line-height: 1.3;
-  }
-  .sidebar-logo p {
-    font-size: 11px;
-    color: var(--text3);
-    margin-top: 3px;
-    font-family: var(--mono);
-  }
-  .nav { padding: 16px 12px; flex: 1; }
-  .nav-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 9px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    color: var(--text2);
-    font-size: 13px;
-    font-weight: 400;
-    transition: all .15s;
-    margin-bottom: 2px;
-    border: 1px solid transparent;
-    user-select: none;
-  }
-  .nav-item:hover { background: var(--bg3); color: var(--text); }
-  .nav-item.active {
-    background: rgba(0,229,160,0.08);
-    color: var(--accent);
-    border-color: rgba(0,229,160,0.15);
-    font-weight: 500;
-  }
-  .nav-icon {
-    width: 18px; height: 18px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .nav-icon svg { width: 16px; height: 16px; }
-  .sidebar-footer {
-    padding: 16px 20px;
-    border-top: 1px solid var(--border);
-    font-size: 11px;
-    color: var(--text3);
-    font-family: var(--mono);
-  }
+  /* 30% — color secundario / superficies */
+  --bg2:      #181c27;
+  --bg3:      #1e2333;
+  --bg4:      #242840;
 
-  /* MAIN */
-  .main {
-    margin-left: 220px;
-    flex: 1;
-    padding: 32px 40px;
-    max-width: calc(100vw - 220px);
-  }
-  .panel { display: none; animation: fadeIn .2s ease; }
-  .panel.active { display: block; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  /* 10% — acento (botones CTA, highlights) */
+  --accent:   #00e5a0;
+  --accent-d: #00b87a;
+  --accent-bg:rgba(0,229,160,0.08);
+  --accent-bd:rgba(0,229,160,0.18);
 
-  .page-header {
-    margin-bottom: 28px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border);
-  }
-  .page-header h2 {
-    font-size: 22px;
-    font-weight: 600;
-    color: var(--text);
-    margin-bottom: 4px;
-  }
-  .page-header p { color: var(--text2); font-size: 13px; }
+  /* Bordes */
+  --b1: rgba(255,255,255,0.055);
+  --b2: rgba(255,255,255,0.10);
+  --b3: rgba(255,255,255,0.16);
 
-  /* GRID */
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  /* Texto */
+  --t1: #dde1ec;
+  --t2: #7e8496;
+  --t3: #454b5e;
 
-  /* CARD */
-  .card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 22px;
-    margin-bottom: 20px;
-  }
-  .card-title {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: .1em;
-    text-transform: uppercase;
-    color: var(--text3);
-    margin-bottom: 14px;
-    font-family: var(--mono);
-  }
+  /* Semánticos */
+  --danger:  #f05c5c;
+  --warn:    #f0a832;
+  --info:    #4e9fff;
 
-  /* FORM */
-  label {
-    display: block;
-    font-size: 12px;
-    color: var(--text2);
-    margin-bottom: 5px;
-    font-weight: 500;
-  }
-  input[type="text"], input[type="date"], input[type="time"], input[type="file"], select, textarea {
-    width: 100%;
-    background: var(--bg3);
-    border: 1px solid var(--border2);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 13px;
-    padding: 9px 12px;
-    outline: none;
-    transition: border-color .15s;
-  }
-  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
-  textarea { resize: vertical; line-height: 1.6; }
-  input[type="file"] { padding: 8px 12px; cursor: pointer; }
-  .field { margin-bottom: 14px; }
+  /* Tipografía */
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
 
-  /* BUTTONS */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 9px 16px;
-    border-radius: 8px;
-    font-family: var(--sans);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all .15s;
-    border: 1px solid var(--border2);
-    background: transparent;
-    color: var(--text2);
-  }
-  .btn:hover { background: var(--bg3); color: var(--text); border-color: var(--border2); }
-  .btn:active { transform: scale(0.97); }
-  .btn-primary {
-    background: var(--accent);
-    color: #0d0f14;
-    border-color: var(--accent);
-    font-weight: 600;
-  }
-  .btn-primary:hover { background: #00cc8e; border-color: #00cc8e; color: #0d0f14; }
-  .btn-ghost { border-color: transparent; }
-  .btn-ghost:hover { border-color: var(--border2); }
-  .btn-sm { padding: 6px 12px; font-size: 12px; }
-  .btn-danger { color: var(--danger); border-color: rgba(255,94,94,0.2); background: transparent; }
-  .btn-danger:hover { background: rgba(255,94,94,0.08); }
-  .btn-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  /* Sidebar */
+  --sb-w: 224px;
+  --sb-collapsed: 60px;
+  --transition: .22s cubic-bezier(.4,0,.2,1);
+}
 
-  /* OUTPUT */
-  .output-area {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 18px;
-    font-family: var(--mono);
-    font-size: 12.5px;
-    line-height: 1.75;
-    white-space: pre-wrap;
-    color: #a8d8b8;
-    max-height: 480px;
-    overflow-y: auto;
-    min-height: 80px;
-  }
-  .output-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-  .output-label {
-    font-size: 11px;
-    font-family: var(--mono);
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: .08em;
-  }
-  .badge {
-    font-size: 11px;
-    font-family: var(--mono);
-    padding: 2px 8px;
-    border-radius: 20px;
-    background: rgba(0,229,160,0.1);
-    color: var(--accent);
-    border: 1px solid rgba(0,229,160,0.2);
-  }
-  .badge-warn {
-    background: rgba(255,181,71,0.1);
-    color: var(--warn);
-    border-color: rgba(255,181,71,0.2);
-  }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
 
-  /* MOVIL ROWS */
-  .movil-row {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr 1fr 1fr 36px;
-    gap: 8px;
-    align-items: end;
-    margin-bottom: 10px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-  }
-  .movil-row:last-child { border-bottom: none; margin-bottom: 0; }
-  .del-btn {
-    background: none;
-    border: 1px solid rgba(255,94,94,0.2);
-    color: var(--danger);
-    border-radius: 8px;
-    width: 34px; height: 34px;
-    cursor: pointer;
-    font-size: 16px;
-    display: flex; align-items: center; justify-content: center;
-    transition: all .15s;
-    flex-shrink: 0;
-  }
-  .del-btn:hover { background: rgba(255,94,94,0.08); }
-  .add-btn {
-    background: none;
-    border: 1px dashed var(--border2);
-    border-radius: 8px;
-    color: var(--accent);
-    font-size: 12px;
-    font-family: var(--sans);
-    font-weight: 500;
-    padding: 8px 14px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 8px;
-    transition: all .15s;
-  }
-  .add-btn:hover { background: rgba(0,229,160,0.05); border-color: var(--accent); }
+body {
+  background: var(--bg);
+  color: var(--t1);
+  font-family: var(--sans);
+  font-size: 14px;
+  min-height: 100vh;
+  line-height: 1.6;
+}
 
-  /* EXCEL CARDS */
-  .xl-card {
-    background: var(--bg3);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    transition: border-color .15s;
-  }
-  .xl-card:hover { border-color: var(--border2); }
-  .xl-icon {
-    width: 44px; height: 44px;
-    background: rgba(0,229,160,0.1);
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    margin-bottom: 14px;
-  }
-  .xl-icon svg { width: 22px; height: 22px; color: var(--accent); }
-  .xl-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
-  .xl-card p { font-size: 12px; color: var(--text2); margin-bottom: 14px; line-height: 1.5; }
+/* ─── SCROLLBAR ─────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--b2); border-radius: 3px; }
 
-  /* TOAST */
-  .toast {
-    position: fixed;
-    bottom: 28px; right: 28px;
-    background: var(--bg2);
-    border: 1px solid var(--accent);
-    color: var(--accent);
-    font-size: 12px;
-    font-family: var(--mono);
-    padding: 10px 16px;
-    border-radius: 8px;
-    z-index: 9999;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all .25s;
-    pointer-events: none;
-  }
-  .toast.show { opacity: 1; transform: none; }
+/* ─── LAYOUT ─────────────────────────────────────── */
+.layout { display: flex; min-height: 100vh; }
 
-  /* DIVIDER */
-  .sep { height: 1px; background: var(--border); margin: 20px 0; }
+/* ─── SIDEBAR ────────────────────────────────────── */
+.sidebar {
+  width: var(--sb-w);
+  background: var(--bg2);
+  border-right: 1px solid var(--b1);
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  transition: width var(--transition);
+  overflow: hidden;
+}
 
-  /* SCROLLBAR */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+/* Estado colapsado */
+.sidebar.collapsed { width: var(--sb-collapsed); }
 
-  /* TEMPLATE EDITOR */
-  .tpl-editor {
-    font-family: var(--mono);
-    font-size: 12.5px;
-    line-height: 1.75;
-    color: #a8c5d4;
-    background: var(--bg);
-    border-color: rgba(0,229,160,0.15);
-  }
+/* Encabezado del sidebar */
+.sb-head {
+  padding: 18px 16px 16px;
+  border-bottom: 1px solid var(--b1);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+  min-height: 76px;
+}
+.sb-brand { overflow: hidden; white-space: nowrap; flex: 1; }
+.logo-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--accent);
+  color: #0c0f15;
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 4px;
+  letter-spacing: .1em;
+  margin-bottom: 7px;
+  white-space: nowrap;
+}
+.sb-head h1 {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--t1);
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.sb-head p {
+  font-size: 10px;
+  color: var(--t3);
+  margin-top: 2px;
+  font-family: var(--mono);
+  white-space: nowrap;
+}
 
-  /* IMPORT RESULT */
-  .import-result {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    font-size: 12.5px;
-    font-family: var(--mono);
-    color: var(--accent);
-    margin-top: 12px;
-    display: none;
-    white-space: pre-wrap;
-    max-height: 200px;
-    overflow-y: auto;
-  }
+/* Botón toggle */
+.sb-toggle {
+  background: var(--bg3);
+  border: 1px solid var(--b2);
+  border-radius: 7px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--t2);
+  flex-shrink: 0;
+  transition: all .15s;
+  margin-top: 2px;
+}
+.sb-toggle:hover { background: var(--bg4); color: var(--t1); border-color: var(--b3); }
+.sb-toggle svg { width: 15px; height: 15px; transition: transform var(--transition); }
+.sidebar.collapsed .sb-toggle svg { transform: rotate(180deg); }
 
-  @media (max-width: 768px) {
-    .sidebar { width: 200px; }
-    .main { margin-left: 200px; padding: 20px; }
-    .grid-2 { grid-template-columns: 1fr; }
-    .movil-row { grid-template-columns: 1fr 1fr; }
-    .movil-row > div:nth-child(3), .movil-row > div:nth-child(4) { grid-column: span 1; }
-    .del-btn { grid-column: 2; justify-self: end; }
-  }
+/* NAV */
+.nav { padding: 12px 10px; flex: 1; overflow: hidden; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--t2);
+  font-size: 13px;
+  font-weight: 400;
+  transition: all .15s;
+  margin-bottom: 2px;
+  border: 1px solid transparent;
+  user-select: none;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.nav-item:hover { background: var(--bg3); color: var(--t1); }
+.nav-item.active {
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-color: var(--accent-bd);
+  font-weight: 500;
+}
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.nav-icon svg { width: 17px; height: 17px; }
+.nav-label { transition: opacity var(--transition); white-space: nowrap; }
+.sidebar.collapsed .nav-label { opacity: 0; pointer-events: none; }
+
+/* Tooltip en modo colapsado */
+.nav-item { position: relative; }
+.sidebar.collapsed .nav-item:hover::after {
+  content: attr(data-label);
+  position: absolute;
+  left: calc(var(--sb-collapsed) - 4px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--bg4);
+  color: var(--t1);
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 7px;
+  border: 1px solid var(--b2);
+  white-space: nowrap;
+  z-index: 999;
+  pointer-events: none;
+}
+
+/* Footer */
+.sb-footer {
+  padding: 14px 16px;
+  border-top: 1px solid var(--b1);
+  font-size: 11px;
+  color: var(--t3);
+  font-family: var(--mono);
+  overflow: hidden;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.sb-footer-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg3);
+  border: 1px solid var(--b2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--t2);
+}
+.sb-footer-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sb-footer-text { overflow: hidden; }
+.sidebar.collapsed .sb-footer-text { display: none; }
+
+/* ─── MAIN ───────────────────────────────────────── */
+.main {
+  margin-left: var(--sb-w);
+  flex: 1;
+  padding: 32px 40px;
+  transition: margin-left var(--transition);
+  min-width: 0;
+}
+.layout.sb-collapsed .main { margin-left: var(--sb-collapsed); }
+
+/* ─── PANELS ─────────────────────────────────────── */
+.panel { display: none; animation: fadeIn .22s ease; }
+.panel.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* ─── PAGE HEADER ────────────────────────────────── */
+.page-header {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--b1);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.page-header-text h2 {
+  font-size: 21px;
+  font-weight: 600;
+  color: var(--t1);
+  margin-bottom: 3px;
+}
+.page-header-text p { color: var(--t2); font-size: 13px; }
+
+/* ─── GRID ───────────────────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+/* ─── CARD ───────────────────────────────────────── */
+/* 30% color: cards usan --bg2 que es la capa secundaria */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--b1);
+  border-radius: 12px;
+  padding: 20px 22px;
+  margin-bottom: 18px;
+}
+.card:last-child { margin-bottom: 0; }
+.card-title {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--t3);
+  margin-bottom: 14px;
+  font-family: var(--mono);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--b1);
+}
+
+/* ─── FORMS ──────────────────────────────────────── */
+label {
+  display: block;
+  font-size: 11.5px;
+  color: var(--t2);
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+input[type="text"],
+input[type="date"],
+input[type="time"],
+input[type="file"],
+select,
+textarea {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--b2);
+  border-radius: 8px;
+  color: var(--t1);
+  font-family: var(--sans);
+  font-size: 13px;
+  padding: 9px 12px;
+  outline: none;
+  transition: border-color .15s, background .15s;
+}
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent);
+  background: var(--bg4);
+}
+textarea { resize: vertical; line-height: 1.6; }
+input[type="file"] { padding: 8px 12px; cursor: pointer; }
+.field { margin-bottom: 14px; }
+.field:last-child { margin-bottom: 0; }
+.hint { font-size: 11px; color: var(--t3); margin-top: 4px; font-family: var(--mono); }
+
+/* Template editor con tinte diferente */
+.tpl-editor {
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.8;
+  color: #8ec8b8;
+  background: var(--bg-alt);
+  border-color: var(--accent-bd);
+}
+.tpl-editor:focus { border-color: var(--accent); }
+
+/* ─── BUTTONS ────────────────────────────────────── */
+/* Solo el 10% de superficie usará --accent */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  border: 1px solid var(--b2);
+  background: transparent;
+  color: var(--t2);
+}
+.btn:hover { background: var(--bg3); color: var(--t1); border-color: var(--b3); }
+.btn:active { transform: scale(0.97); }
+
+/* CTA / primario — usa el 10% acento */
+.btn-primary {
+  background: var(--accent);
+  color: #0c0f15;
+  border-color: var(--accent);
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+.btn-primary:hover { background: var(--accent-d); border-color: var(--accent-d); color: #0c0f15; }
+
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-xs { padding: 4px 9px; font-size: 11px; }
+
+.btn-outline-accent {
+  border-color: var(--accent-bd);
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+.btn-outline-accent:hover { background: rgba(0,229,160,0.14); border-color: var(--accent); }
+
+.del-btn {
+  background: none;
+  border: 1px solid rgba(240,92,92,0.2);
+  color: var(--danger);
+  border-radius: 8px;
+  width: 34px; height: 34px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.del-btn:hover { background: rgba(240,92,92,0.09); }
+
+.add-btn {
+  background: none;
+  border: 1px dashed var(--b2);
+  border-radius: 8px;
+  color: var(--accent);
+  font-size: 12px;
+  font-family: var(--sans);
+  font-weight: 500;
+  padding: 8px 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  transition: all .15s;
+}
+.add-btn:hover { background: var(--accent-bg); border-color: var(--accent); border-style: solid; }
+
+/* ─── OUTPUT ─────────────────────────────────────── */
+.output-area {
+  background: var(--bg-alt);
+  border: 1px solid var(--b1);
+  border-radius: 10px;
+  padding: 16px 18px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  color: #8ec8b8;
+  max-height: 500px;
+  overflow-y: auto;
+  min-height: 60px;
+}
+.output-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.output-label {
+  font-size: 10px;
+  font-family: var(--mono);
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+}
+
+/* ─── BADGES ─────────────────────────────────────── */
+.badge {
+  font-size: 10px;
+  font-family: var(--mono);
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  border: 1px solid var(--accent-bd);
+}
+
+/* ─── MOVIL ROWS ─────────────────────────────────── */
+.movil-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr 36px;
+  gap: 8px;
+  align-items: end;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--b1);
+}
+.movil-row:first-child { padding-top: 0; }
+.movil-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+/* ─── XL CARDS (Excel section) ──────────────────── */
+.xl-card {
+  background: var(--bg3);
+  border: 1px solid var(--b1);
+  border-radius: 12px;
+  padding: 22px;
+  transition: border-color .15s;
+}
+.xl-card:hover { border-color: var(--b3); }
+.xl-icon {
+  width: 42px; height: 42px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-bd);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 14px;
+}
+.xl-icon svg { width: 20px; height: 20px; color: var(--accent); }
+.xl-card h3 { font-size: 14px; font-weight: 600; margin-bottom: 5px; color: var(--t1); }
+.xl-card p { font-size: 12px; color: var(--t2); margin-bottom: 16px; line-height: 1.55; }
+
+/* ─── FLOW STEPS ─────────────────────────────────── */
+.flow-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--b1);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.flow-step {
+  background: var(--bg3);
+  padding: 14px 16px;
+}
+.step-num {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--accent);
+  letter-spacing: .1em;
+  margin-bottom: 7px;
+}
+.step-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; color: var(--t1); }
+.step-desc { font-size: 11.5px; color: var(--t2); line-height: 1.45; }
+
+/* ─── IMPORT RESULT ──────────────────────────────── */
+.import-result {
+  background: var(--bg-alt);
+  border: 1px solid var(--b1);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--accent);
+  margin-top: 12px;
+  display: none;
+}
+
+/* ─── TOAST ──────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  background: var(--bg2);
+  border: 1px solid var(--b3);
+  border-left: 3px solid var(--accent);
+  color: var(--t1);
+  font-size: 12px;
+  font-family: var(--mono);
+  padding: 10px 16px;
+  border-radius: 8px;
+  z-index: 9999;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: all .25s;
+  pointer-events: none;
+  max-width: 280px;
+}
+.toast.show { opacity: 1; transform: none; }
+
+/* ─── DIVIDER ────────────────────────────────────── */
+.sep { height: 1px; background: var(--b1); margin: 18px 0; }
+
+/* ─── RESPONSIVE ─────────────────────────────────── */
+@media (max-width: 900px) {
+  .grid-2 { grid-template-columns: 1fr; }
+  .flow-steps { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .main { padding: 20px 16px; }
+  .movil-row { grid-template-columns: 1fr 1fr; }
+  .del-btn { grid-column: 2; justify-self: end; }
+  .flow-steps { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
 
-<div class="layout">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-logo">
-      <div class="logo-badge">ITS v2.0</div>
-      <h1>Generador de Reportes</h1>
-      <p>Sistema de Mantenimiento</p>
+<div class="layout" id="layout">
+
+  <!-- ═══════════ SIDEBAR ═══════════ -->
+  <aside class="sidebar" id="sidebar">
+
+    <div class="sb-head">
+      <div class="sb-brand">
+        <div class="logo-badge">ITS v2.0</div>
+        <h1>Generador de<br>Reportes</h1>
+        <p>Sistema de Mantenimiento</p>
+      </div>
+      <button class="sb-toggle" id="sb-toggle-btn" onclick="toggleSidebar()" title="Colapsar menú" aria-label="Colapsar menú">
+        <!-- chevron left -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+      </button>
     </div>
+
     <nav class="nav">
-      <div class="nav-item active" onclick="showPanel('prev')">
+      <div class="nav-item active" data-label="Preventivos" onclick="showPanel('prev')">
         <span class="nav-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+            <rect x="9" y="3" width="6" height="4" rx="1"/>
+            <path d="M9 12h6M9 16h4"/>
+          </svg>
         </span>
-        Preventivos
+        <span class="nav-label">Preventivos</span>
       </div>
-      <div class="nav-item" onclick="showPanel('turno')">
+      <div class="nav-item" data-label="Entrega de turno" onclick="showPanel('turno')">
         <span class="nav-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>
+          </svg>
         </span>
-        Entrega de turno
+        <span class="nav-label">Entrega de turno</span>
       </div>
-      <div class="nav-item" onclick="showPanel('excel')">
+      <div class="nav-item" data-label="Plantilla Excel" onclick="showPanel('excel')">
         <span class="nav-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M10 13l-2 4h6l-2-4"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <path d="M14 2v6h6M10 13l-2 4h6l-2-4"/>
+          </svg>
         </span>
-        Plantilla Excel
+        <span class="nav-label">Plantilla Excel</span>
       </div>
     </nav>
-    <div class="sidebar-footer">
-      Nicolas Cancimance<br>
-      Técnico ITS
+
+    <div class="sb-footer">
+      <div class="sb-footer-inner">
+        <div class="sb-footer-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+        </div>
+        <div class="sb-footer-text">
+          Nicolas Cancimance<br>
+          <span style="color:var(--t3)">Técnico ITS</span>
+        </div>
+      </div>
     </div>
   </aside>
 
-  <!-- MAIN -->
-  <main class="main">
+  <!-- ═══════════ MAIN ═══════════ -->
+  <main class="main" id="main-content">
 
-    <!-- ===== PREVENTIVOS ===== -->
+    <!-- ══ PREVENTIVOS ══ -->
     <div id="panel-prev" class="panel active">
       <div class="page-header">
-        <h2>Reportes Preventivos</h2>
-        <p>Genera los comentarios de mantenimiento preventivo desde datos tabulados</p>
+        <div class="page-header-text">
+          <h2>Reportes Preventivos</h2>
+          <p>Genera los comentarios de mantenimiento desde datos tabulados</p>
+        </div>
       </div>
 
       <div class="grid-2">
+        <!-- Columna izquierda: entrada -->
         <div>
           <div class="card">
             <div class="card-title">Datos de entrada</div>
             <div class="field">
-              <label>Datos (Código ⇥ KM ⇥ Corrección) — una línea por móvil</label>
+              <label>Datos tabulados — Código ⇥ KM ⇥ Corrección</label>
               <textarea id="input-data" rows="8" placeholder="Z34-4002&#9;241790&#10;Z34-4009&#9;232205&#10;Z34-4016&#9;230798&#9;Ajuste de puente bornera&#10;Z34-4018&#9;236.726"></textarea>
-              <p style="font-size:11px;color:var(--text3);margin-top:4px;font-family:var(--mono);">Tab separa columnas · 3ª col. opcional</p>
+              <p class="hint">Tab separa columnas · 3ª columna (corrección) es opcional</p>
             </div>
           </div>
+
           <div class="card">
             <div class="card-title">Plantilla de texto</div>
             <div class="field">
@@ -446,7 +674,7 @@ Mantenimiento preventivo al sistema ITS:
 Se realiza limpieza de los equipos, incluyendo dispositivos en el habitáculo, cámaras IP, baterías, consola y puertos USB. Se revisa y valida la configuración del NVR y el router de red, asegurando correcta transmisión con el CDEG.  
 Corrección: {correccion}  
 Estado: Móvil operativo por ITS.</textarea>
-              <p style="font-size:11px;color:var(--text3);margin-top:4px;font-family:var(--mono);">Variables: {codigo} · {km} · {correccion}</p>
+              <p class="hint">Variables disponibles: {codigo} · {km} · {correccion}</p>
             </div>
             <button class="btn btn-primary" onclick="genPreventivos()">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
@@ -455,8 +683,9 @@ Estado: Móvil operativo por ITS.</textarea>
           </div>
         </div>
 
+        <!-- Columna derecha: resultado -->
         <div id="output-prev-wrapper" style="display:none;">
-          <div class="card" style="height:100%;">
+          <div class="card" style="position:sticky;top:20px;">
             <div class="output-header">
               <span class="output-label">Resultado</span>
               <span class="badge" id="count-badge">0 reportes</span>
@@ -477,11 +706,13 @@ Estado: Móvil operativo por ITS.</textarea>
       </div>
     </div>
 
-    <!-- ===== TURNO ===== -->
+    <!-- ══ TURNO ══ -->
     <div id="panel-turno" class="panel">
       <div class="page-header">
-        <h2>Entrega de Turno</h2>
-        <p>Genera el resumen de actividades del día para entrega de turno</p>
+        <div class="page-header-text">
+          <h2>Entrega de Turno</h2>
+          <p>Genera el resumen de actividades del día</p>
+        </div>
       </div>
 
       <div class="grid-2">
@@ -510,7 +741,7 @@ Estado: Móvil operativo por ITS.</textarea>
           </div>
 
           <div class="card">
-            <div class="card-title">Correctivos <span style="font-size:10px;font-weight:400;color:var(--text3);">(opcional)</span></div>
+            <div class="card-title">Correctivos <span style="font-size:10px;font-weight:400;color:var(--t3);text-transform:none;letter-spacing:0">(opcional)</span></div>
             <div class="field">
               <label>Un correctivo por línea</label>
               <textarea id="t-correctivos" rows="3" placeholder="Z34-4016 – Ajuste de puente bornera en habitaculo&#10;Z34-4020 – Cambio de batería NVR"></textarea>
@@ -518,16 +749,16 @@ Estado: Móvil operativo por ITS.</textarea>
           </div>
 
           <div class="card">
-            <div class="card-title">Repuestos utilizados <span style="font-size:10px;font-weight:400;color:var(--text3);">(opcional)</span></div>
+            <div class="card-title">Repuestos utilizados <span style="font-size:10px;font-weight:400;color:var(--t3);text-transform:none;letter-spacing:0">(opcional)</span></div>
             <textarea id="t-repuestos" rows="2" placeholder="Batería 12V 7Ah (x2), fusible 5A (x3)"></textarea>
           </div>
 
           <div class="card">
-            <div class="card-title">Observaciones <span style="font-size:10px;font-weight:400;color:var(--text3);">(opcional)</span></div>
+            <div class="card-title">Observaciones <span style="font-size:10px;font-weight:400;color:var(--t3);text-transform:none;letter-spacing:0">(opcional)</span></div>
             <textarea id="t-obs" rows="2" placeholder="Sin novedades adicionales."></textarea>
           </div>
 
-          <button class="btn btn-primary" onclick="genTurno()" style="margin-bottom:20px;">
+          <button class="btn btn-primary" onclick="genTurno()" style="margin-bottom:24px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             Generar entrega de turno
           </button>
@@ -554,14 +785,16 @@ Estado: Móvil operativo por ITS.</textarea>
       </div>
     </div>
 
-    <!-- ===== EXCEL ===== -->
+    <!-- ══ EXCEL ══ -->
     <div id="panel-excel" class="panel">
       <div class="page-header">
-        <h2>Plantillas Excel</h2>
-        <p>Descarga, completa y vuelve a importar para generar reportes automáticamente</p>
+        <div class="page-header-text">
+          <h2>Plantillas Excel</h2>
+          <p>Descarga, completa y vuelve a importar para generar reportes automáticamente</p>
+        </div>
       </div>
 
-      <div class="grid-2" style="margin-bottom:24px;">
+      <div class="grid-2" style="margin-bottom:20px;">
         <div class="xl-card">
           <div class="xl-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
@@ -570,7 +803,7 @@ Estado: Móvil operativo por ITS.</textarea>
           <p>Columnas: Código · KM · Corrección (opcional)<br>Genera todos los reportes al importar.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-primary btn-sm" onclick="downloadXlsPrev()">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Descargar .xlsx
             </button>
             <button class="btn btn-sm" onclick="downloadCsvPrev()">CSV ejemplo</button>
@@ -584,7 +817,7 @@ Estado: Móvil operativo por ITS.</textarea>
           <p>4 hojas: General · Preventivos · Correctivos · Repuestos<br>Auto-rellena el formulario al importar.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn btn-primary btn-sm" onclick="downloadXlsTurno()">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Descargar .xlsx
             </button>
           </div>
@@ -602,26 +835,26 @@ Estado: Móvil operativo por ITS.</textarea>
 
       <div class="card">
         <div class="card-title">Flujo de trabajo recomendado</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-radius:8px;overflow:hidden;">
-          <div style="background:var(--bg3);padding:14px 16px;">
-            <div style="font-family:var(--mono);font-size:10px;color:var(--accent);margin-bottom:6px;">01</div>
-            <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Descargar plantilla</div>
-            <div style="font-size:12px;color:var(--text2);">Elige preventivos o entrega de turno</div>
+        <div class="flow-steps">
+          <div class="flow-step">
+            <div class="step-num">01</div>
+            <div class="step-title">Descargar plantilla</div>
+            <div class="step-desc">Elige preventivos o entrega de turno</div>
           </div>
-          <div style="background:var(--bg3);padding:14px 16px;">
-            <div style="font-family:var(--mono);font-size:10px;color:var(--accent);margin-bottom:6px;">02</div>
-            <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Completar Excel</div>
-            <div style="font-size:12px;color:var(--text2);">Rellena los datos del día en Excel</div>
+          <div class="flow-step">
+            <div class="step-num">02</div>
+            <div class="step-title">Completar Excel</div>
+            <div class="step-desc">Rellena los datos del día en tu computador</div>
           </div>
-          <div style="background:var(--bg3);padding:14px 16px;">
-            <div style="font-family:var(--mono);font-size:10px;color:var(--accent);margin-bottom:6px;">03</div>
-            <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Importar aquí</div>
-            <div style="font-size:12px;color:var(--text2);">Sube el archivo y se procesa automáticamente</div>
+          <div class="flow-step">
+            <div class="step-num">03</div>
+            <div class="step-title">Importar aquí</div>
+            <div class="step-desc">Sube el archivo y se procesa automáticamente</div>
           </div>
-          <div style="background:var(--bg3);padding:14px 16px;">
-            <div style="font-family:var(--mono);font-size:10px;color:var(--accent);margin-bottom:6px;">04</div>
-            <div style="font-size:13px;font-weight:500;margin-bottom:4px;">Copiar o descargar</div>
-            <div style="font-size:12px;color:var(--text2);">Resultado listo para pegar o guardar</div>
+          <div class="flow-step">
+            <div class="step-num">04</div>
+            <div class="step-title">Copiar o descargar</div>
+            <div class="step-desc">Resultado listo para pegar o guardar como .txt</div>
           </div>
         </div>
       </div>
@@ -634,24 +867,37 @@ Estado: Móvil operativo por ITS.</textarea>
 <div class="toast" id="toast"></div>
 
 <script>
-// ── NAV ──────────────────────────────────────────────
+/* ── SIDEBAR TOGGLE ──────────────────────────────── */
+let sidebarOpen = true;
+
+function toggleSidebar() {
+  sidebarOpen = !sidebarOpen;
+  const sb = document.getElementById('sidebar');
+  const layout = document.getElementById('layout');
+  sb.classList.toggle('collapsed', !sidebarOpen);
+  layout.classList.toggle('sb-collapsed', !sidebarOpen);
+  const btn = document.getElementById('sb-toggle-btn');
+  btn.title = sidebarOpen ? 'Colapsar menú' : 'Expandir menú';
+}
+
+/* ── NAV ─────────────────────────────────────────── */
 function showPanel(id) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('panel-' + id).classList.add('active');
-  const idx = {prev:0, turno:1, excel:2}[id];
+  const idx = { prev: 0, turno: 1, excel: 2 }[id];
   document.querySelectorAll('.nav-item')[idx].classList.add('active');
 }
 
-// ── TOAST ─────────────────────────────────────────────
+/* ── TOAST ───────────────────────────────────────── */
 function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
+  setTimeout(() => t.classList.remove('show'), 2400);
 }
 
-// ── PREVENTIVOS ──────────────────────────────────────
+/* ── PREVENTIVOS ─────────────────────────────────── */
 function genPreventivos() {
   const raw = document.getElementById('input-data').value.trim();
   const tpl = document.getElementById('template-text').value;
@@ -685,8 +931,9 @@ function downloadPrev() {
   dlText(document.getElementById('output-prev').textContent, 'reporte_preventivos.txt');
 }
 
-// ── TURNO ─────────────────────────────────────────────
+/* ── TURNO ───────────────────────────────────────── */
 let movilCount = 0;
+
 function addMovil(m, ot, hi, hf) {
   movilCount++;
   const id = 'mv' + movilCount;
@@ -695,21 +942,21 @@ function addMovil(m, ot, hi, hf) {
   div.innerHTML = `
     <div>
       <label style="font-size:11px;font-family:var(--mono)">Móvil</label>
-      <input type="text" placeholder="Z34-4002" value="${m||''}" />
+      <input type="text" placeholder="Z34-4002" value="${m || ''}" />
     </div>
     <div>
       <label style="font-size:11px;font-family:var(--mono)">OT</label>
-      <input type="text" placeholder="123456" value="${ot||''}" />
+      <input type="text" placeholder="123456" value="${ot || ''}" />
     </div>
     <div>
       <label style="font-size:11px;font-family:var(--mono)">Inicio</label>
-      <input type="time" value="${hi||''}" />
+      <input type="time" value="${hi || ''}" />
     </div>
     <div>
       <label style="font-size:11px;font-family:var(--mono)">Fin</label>
-      <input type="time" value="${hf||''}" />
+      <input type="time" value="${hf || ''}" />
     </div>
-    <button class="del-btn" onclick="document.getElementById('${id}').remove()">×</button>`;
+    <button class="del-btn" onclick="document.getElementById('${id}').remove()" title="Eliminar">×</button>`;
   document.getElementById('moviles-list').appendChild(div);
 }
 addMovil();
@@ -718,7 +965,7 @@ function formatFecha(d) {
   if (!d) return '___';
   const [y, m, day] = d.split('-');
   const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  return `${parseInt(day)} de ${meses[parseInt(m)-1]} de ${y}`;
+  return `${parseInt(day)} de ${meses[parseInt(m) - 1]} de ${y}`;
 }
 
 function genTurno() {
@@ -759,7 +1006,7 @@ function downloadTurno() {
   dlText(document.getElementById('output-turno').textContent, 'entrega_turno.txt');
 }
 
-// ── EXCEL DOWNLOAD ─────────────────────────────────────
+/* ── EXCEL DOWNLOAD ──────────────────────────────── */
 function downloadXlsPrev() {
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet([
@@ -769,7 +1016,7 @@ function downloadXlsPrev() {
     ['Z34-4016', '230798', 'Ajuste de puente bornera en habitaculo'],
     ['Z34-4018', '236726', ''],
   ]);
-  ws['!cols'] = [{wch:14},{wch:12},{wch:48}];
+  ws['!cols'] = [{ wch: 14 }, { wch: 12 }, { wch: 48 }];
   XLSX.utils.book_append_sheet(wb, ws, 'Preventivos');
   XLSX.writeFile(wb, 'plantilla_preventivos.xlsx');
   toast('✓ Descargando plantilla');
@@ -783,69 +1030,67 @@ function downloadCsvPrev() {
 function downloadXlsTurno() {
   const wb = XLSX.utils.book_new();
   const ws1 = XLSX.utils.aoa_to_sheet([
-    ['Campo','Valor'],
+    ['Campo', 'Valor'],
     ['Fecha (AAAA-MM-DD)', new Date().toISOString().split('T')[0]],
-    ['Tecnico','Nicolas Cancimance'],
-    ['Observaciones','Sin novedades.'],
+    ['Tecnico', 'Nicolas Cancimance'],
+    ['Observaciones', 'Sin novedades.'],
   ]);
-  ws1['!cols'] = [{wch:26},{wch:40}];
+  ws1['!cols'] = [{ wch: 26 }, { wch: 40 }];
   XLSX.utils.book_append_sheet(wb, ws1, 'General');
   const ws2 = XLSX.utils.aoa_to_sheet([
-    ['Movil','OT','Hora_Inicio','Hora_Fin'],
-    ['Z34-4002','123456','08:00','10:30'],
-    ['Z34-4009','123457','10:45','12:30'],
+    ['Movil', 'OT', 'Hora_Inicio', 'Hora_Fin'],
+    ['Z34-4002', '123456', '08:00', '10:30'],
+    ['Z34-4009', '123457', '10:45', '12:30'],
   ]);
-  ws2['!cols'] = [{wch:13},{wch:10},{wch:12},{wch:12}];
+  ws2['!cols'] = [{ wch: 13 }, { wch: 10 }, { wch: 12 }, { wch: 12 }];
   XLSX.utils.book_append_sheet(wb, ws2, 'Preventivos');
   const ws3 = XLSX.utils.aoa_to_sheet([
-    ['Movil','Descripcion'],
-    ['Z34-4016','Ajuste de puente bornera en habitaculo'],
+    ['Movil', 'Descripcion'],
+    ['Z34-4016', 'Ajuste de puente bornera en habitaculo'],
   ]);
-  ws3['!cols'] = [{wch:13},{wch:50}];
+  ws3['!cols'] = [{ wch: 13 }, { wch: 50 }];
   XLSX.utils.book_append_sheet(wb, ws3, 'Correctivos');
   const ws4 = XLSX.utils.aoa_to_sheet([
     ['Repuesto'],
     ['Bateria 12V 7Ah'],
     ['Fusible 5A'],
   ]);
-  ws4['!cols'] = [{wch:40}];
+  ws4['!cols'] = [{ wch: 40 }];
   XLSX.utils.book_append_sheet(wb, ws4, 'Repuestos');
   XLSX.writeFile(wb, 'plantilla_turno.xlsx');
   toast('✓ Descargando plantilla');
 }
 
-// ── EXCEL IMPORT ──────────────────────────────────────
+/* ── EXCEL IMPORT ────────────────────────────────── */
 function handleImport(input) {
   const file = input.files[0]; if (!file) return;
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = function (e) {
     const data = new Uint8Array(e.target.result);
-    const wb = XLSX.read(data, {type:'array'});
+    const wb = XLSX.read(data, { type: 'array' });
     const sheets = wb.SheetNames;
     const msg = document.getElementById('import-msg');
     msg.style.display = 'block';
 
     if (sheets.includes('General')) {
-      // Turno
-      const gen = XLSX.utils.sheet_to_json(wb.Sheets['General'],{header:1}).slice(1);
-      const getV = k => { const r = gen.find(r => r[0] && r[0].toString().toLowerCase().includes(k.toLowerCase())); return r ? (r[1]||'').toString() : ''; };
+      const gen = XLSX.utils.sheet_to_json(wb.Sheets['General'], { header: 1 }).slice(1);
+      const getV = k => { const r = gen.find(r => r[0] && r[0].toString().toLowerCase().includes(k.toLowerCase())); return r ? (r[1] || '').toString() : ''; };
       document.getElementById('t-fecha').value = getV('fecha');
       document.getElementById('t-tecnico').value = getV('tecnico') || 'Nicolas Cancimance';
       document.getElementById('t-obs').value = getV('observ');
 
       document.getElementById('moviles-list').innerHTML = ''; movilCount = 0;
       if (sheets.includes('Preventivos')) {
-        const prevR = XLSX.utils.sheet_to_json(wb.Sheets['Preventivos'],{header:1}).slice(1);
+        const prevR = XLSX.utils.sheet_to_json(wb.Sheets['Preventivos'], { header: 1 }).slice(1);
         prevR.forEach(r => addMovil(r[0], r[1], r[2], r[3]));
       }
       if (movilCount === 0) addMovil();
-
       if (sheets.includes('Correctivos')) {
-        const corR = XLSX.utils.sheet_to_json(wb.Sheets['Correctivos'],{header:1}).slice(1);
-        document.getElementById('t-correctivos').value = corR.map(r => r[0] + (r[1] ? ' – '+r[1] : '')).filter(Boolean).join('\n');
+        const corR = XLSX.utils.sheet_to_json(wb.Sheets['Correctivos'], { header: 1 }).slice(1);
+        document.getElementById('t-correctivos').value = corR.map(r => r[0] + (r[1] ? ' – ' + r[1] : '')).filter(Boolean).join('\n');
       }
       if (sheets.includes('Repuestos')) {
-        const repR = XLSX.utils.sheet_to_json(wb.Sheets['Repuestos'],{header:1}).slice(1);
+        const repR = XLSX.utils.sheet_to_json(wb.Sheets['Repuestos'], { header: 1 }).slice(1);
         document.getElementById('t-repuestos').value = repR.map(r => r[0]).filter(Boolean).join(', ');
       }
       msg.textContent = '✓ Datos importados. Ve a Entrega de turno para revisar y generar.';
@@ -853,17 +1098,16 @@ function handleImport(input) {
       toast('✓ Excel importado correctamente');
 
     } else {
-      // Preventivos
       const ws = wb.Sheets[sheets[0]];
-      const rows = XLSX.utils.sheet_to_json(ws,{header:1}).slice(1);
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 }).slice(1);
       const tpl = document.getElementById('template-text').value;
       let out = ''; let count = 0;
       rows.forEach(r => {
-        const codigo = (r[0]||'').toString().trim();
-        const km = (r[1]||'').toString().replace(/\./g,'').trim();
-        const correccion = (r[2]||'').toString().trim() || 'Sin novedades.';
+        const codigo = (r[0] || '').toString().trim();
+        const km = (r[1] || '').toString().replace(/\./g, '').trim();
+        const correccion = (r[2] || '').toString().trim() || 'Sin novedades.';
         if (!codigo) return;
-        out += tpl.replace(/\{codigo\}/g,codigo).replace(/\{km\}/g,km).replace(/\{correccion\}/g,correccion)+'\n';
+        out += tpl.replace(/\{codigo\}/g, codigo).replace(/\{km\}/g, km).replace(/\{correccion\}/g, correccion) + '\n';
         count++;
       });
       document.getElementById('output-prev').textContent = out.trim();
@@ -877,14 +1121,14 @@ function handleImport(input) {
   reader.readAsArrayBuffer(file);
 }
 
-// ── UTILS ─────────────────────────────────────────────
+/* ── UTILS ───────────────────────────────────────── */
 function dlText(text, name) {
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([text], {type:'text/plain;charset=utf-8'}));
+  a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
   a.download = name; a.click();
 }
 
-// Init
+/* ── INIT ────────────────────────────────────────── */
 document.getElementById('t-fecha').value = new Date().toISOString().split('T')[0];
 </script>
 </body>
