@@ -669,11 +669,12 @@ input[type="file"] { padding: 8px 12px; cursor: pointer; }
           <div class="card">
             <div class="card-title">Plantilla de texto</div>
             <div class="field">
-              <textarea id="template-text" class="tpl-editor" rows="9">**{codigo} – {km} km**  
+              <textarea id="template-text" class="tpl-editor" rows="9">*{codigo} – {km} km*  
 Mantenimiento preventivo al sistema ITS:  
 Se realiza limpieza de los equipos, incluyendo dispositivos en el habitáculo, cámaras IP, baterías, consola y puertos USB. Se revisa y valida la configuración del NVR y el router de red, asegurando correcta transmisión con el CDEG.  
 Corrección: {correccion}  
-Estado: Móvil operativo por ITS.</textarea>
+Estado: Móvil operativo por ITS.
+              </textarea>
               <p class="hint">Variables disponibles: {codigo} · {km} · {correccion}</p>
             </div>
             <button class="btn btn-primary" onclick="genPreventivos()">
@@ -898,6 +899,34 @@ function toast(msg) {
 }
 
 /* ── PREVENTIVOS ─────────────────────────────────── */
+function parseLine(line) {
+  // 1. Intentar separar por Tab (formato ideal)
+  if (line.includes('\t')) {
+    const p = line.split('\t');
+    return {
+      codigo: (p[0] || '').trim(),
+      km:     (p[1] || '').trim(),
+      correccion: (p[2] || '').trim()
+    };
+  }
+  // 2. Fallback: separar por 2+ espacios consecutivos
+  const parts = line.trim().split(/\s{2,}/);
+  if (parts.length >= 2) {
+    return {
+      codigo: parts[0].trim(),
+      km:     parts[1].trim(),
+      correccion: (parts[2] || '').trim()
+    };
+  }
+  // 3. Último recurso: código = primer token, km = segundo token
+  const tokens = line.trim().split(/\s+/);
+  return {
+    codigo: tokens[0] || '',
+    km:     tokens[1] || '',
+    correccion: tokens.slice(2).join(' ').trim()
+  };
+}
+
 function genPreventivos() {
   const raw = document.getElementById('input-data').value.trim();
   const tpl = document.getElementById('template-text').value;
@@ -905,10 +934,9 @@ function genPreventivos() {
   const lines = raw.split('\n').filter(l => l.trim());
   let out = ''; let count = 0;
   for (const line of lines) {
-    const p = line.split('\t');
-    const codigo = (p[0] || '').trim();
-    const km = (p[1] || '').replace(/\./g, '').trim();
-    const correccion = (p[2] || '').trim() || 'Sin novedades.';
+    const { codigo, km: kmRaw, correccion: corrRaw } = parseLine(line);
+    const km = kmRaw.replace(/\./g, '');          // quita puntos de miles: 236.726 → 236726
+    const correccion = corrRaw || 'Sin novedades.';
     if (!codigo) continue;
     out += tpl
       .replace(/\{codigo\}/g, codigo)
